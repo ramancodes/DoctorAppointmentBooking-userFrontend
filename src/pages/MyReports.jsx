@@ -69,8 +69,7 @@ const downloadFile = async (fileUrl) => {
 const initPay = (order) => {
   const type = 'report'
   const options = {
-    // key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-    key: "rzp_test_LW4FaK6l8PzxJ4",
+    key: import.meta.env.VITE_RAZORPAY_KEY_ID,
     amount: order.amount,
     currency: order.currency,
     name: 'Report Payment',

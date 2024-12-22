@@ -10,8 +10,7 @@ const AppContextProvider = (props)=>{
     const phone = '+91-6204239638'
     const email = 'ramanmanjhi01@gmail.com'
     const officeAddress = 'Rohini, Delhi'
-    // const backendUrl = import.meta.env.VITE_BACKEND_URL
-    const backendUrl = "http://13.203.104.202:4000"
+    const backendUrl = import.meta.env.VITE_BACKEND_URL
 
     const [doctors, setDoctors] = useState([])
     const [token, setToken] = useState(localStorage.getItem('token') ? localStorage.getItem('token') : false)
