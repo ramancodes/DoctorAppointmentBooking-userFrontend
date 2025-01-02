@@ -8,6 +8,7 @@ const NavBar = () => {
     const menu_icon = 'https://res.cloudinary.com/dspuitf5t/image/upload/v1732231732/menu_icon_djs1ts.svg'
     const cross_icon = 'https://res.cloudinary.com/dspuitf5t/image/upload/v1732231731/cross_icon_fkqsbh.svg'
     const dropdown_icon = 'https://res.cloudinary.com/dspuitf5t/image/upload/v1732231809/dropdown_icon_losvao.svg'
+    const login_icon = 'https://res.cloudinary.com/dspuitf5t/image/upload/v1735800254/user-interface_ufgy3h.svg'
 
     const navigate = useNavigate();
 
@@ -70,6 +71,10 @@ const NavBar = () => {
             </NavLink>
         </ul>
         <div className='flex items-center gap-4'>
+            {
+                !token && <img className='w-7 md:hidden' src={login_icon} onClick={()=>navigate('/login')} alt="" />
+            }
+            
             {
                 token 
                 ? <div className='flex items-center gap-2 cursor-pointer group relative'>
