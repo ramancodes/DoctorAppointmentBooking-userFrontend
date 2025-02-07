@@ -13,48 +13,50 @@ const SecondOpinionDocApp = () => {
     const navigate = useNavigate()
     const {token, backendUrl, departments, getAllDepartments} = useContext(AppContext)
 
-    const [department, setDepartment] = useState('')
-    const [filterSymptom, setFilterSymptom] = useState([])
-    const [userSymptoms, setUserSymptoms] = useState([])
-    const [reportFile, setReportFile] = useState(false)
-    const [showInfo, setShowInfo] = useState(false)
+    const [department, setDepartment] = useState('');
+  const [filterSymptom, setFilterSymptom] = useState([]);
+  const [userSymptoms, setUserSymptoms] = useState([]);
+  const [reportFile, setReportFile] = useState(null);
+  const [showInfo, setShowInfo] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-    const ref = useRef([]);
+  const checkboxRefs = useRef([]);
 
-    const Uncheck = () => {
-
-        console.log(ref.current.length)
-        for (let i = 0; i < ref.current.length; i++) {
-
-            ref.current[i].checked = false;
-        }
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file && file.type === 'application/pdf') {
+      setReportFile(file);
+    } else {
+      setReportFile(null);
     }
-
+  };
     
-    const setValue = async (value, selectedIndex)=>{
-        setDepartment(value)
-        if(selectedIndex===0){
-            setFilterSymptom([])
+    const setValue = (value, selectedIndex) => {
+        setDepartment(value);
+        if (selectedIndex === 0) {
+          setFilterSymptom([]);
         } else {
-            setFilterSymptom(departments[selectedIndex-1].symptoms)
-            setUserSymptoms([])
+          setFilterSymptom(departments[selectedIndex - 1].symptoms);
+          setUserSymptoms([]);
         }
-        Uncheck()
-    }
+        checkboxRefs.current.forEach(ref => {
+          if (ref) ref.checked = false;
+        });
+      };
+
+      const addUserSymptoms = (symptom) => {
+        setUserSymptoms(prev => 
+          prev.includes(symptom) 
+            ? prev.filter(s => s !== symptom)
+            : [...prev, symptom]
+        );
+      };
     
-    const addUserSymptoms = (symptom)=>{
-        let userSymptomsArray = userSymptoms
-        if(userSymptomsArray.includes(symptom)){
-            userSymptomsArray = userSymptomsArray.filter(s=>s!==symptom)
-            setUserSymptoms(userSymptomsArray)
-        } else {
-            userSymptomsArray.push(symptom)
-            setUserSymptoms(userSymptomsArray)
-        }
-    }
+    
 
     const bookSecondAppointment = async (event)=>{
         event.preventDefault()
+        setIsLoading(true)
 
         if(!token){
           toast.warn('Login to Upload Report')
@@ -80,7 +82,9 @@ const SecondOpinionDocApp = () => {
         } catch (error) {
             console.log(error);
             toast.error(error.message)
-        }
+        } finally {
+            setIsLoading(false);
+          }
         
       }
 
@@ -89,82 +93,143 @@ const SecondOpinionDocApp = () => {
       },[])
 
   return (
-    <div>
-        <div className='flex bg-primary rounded-lg px-6 sm:px-10 md:px-14 lg:px-12 my-20 md:mx-10'>
-        {/* -------------------------Left Side ----------------------- */}
-        <div className='flex-1 py-8 sm:py-10 md:py-16 lg:py-24 lg:pl-5'>
-            <div className='text-xl sm:text-2xl md:text-3xl lg:text-5xl font-semibold text-white'>
-                <p>Get A Second Opinion</p>
-                <p className='mt-4'>On Your Reports With</p>
-                <p className='mt-4'>Our Experienced Doctors</p>
-            </div>
-            <div className='mt-6'>
-                <a href='#upload-report' className='flex rounded-full bg-white w-max px-6 py-3 gap-2 hover:scale-105 transition-all duration-200 text-gray-600 text-sm'>
-                    Upload Your Report <img className='w-3' src={arrow_icon} alt="" />
-                </a>
-            </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero Section - Mobile First */}
+      <div className="bg-primary rounded-lg mx-4 sm:mx-6 md:mx-10 my-6 sm:my-10 overflow-hidden">
+        <div className="p-6 sm:p-8 md:p-12 flex flex-col md:flex-row items-center">
+          <div className="w-full md:w-1/2 text-white space-y-4">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-tight">
+              Get A Second Opinion
+              <br className="hidden sm:block" />
+              On Your Reports With
+              <br className="hidden sm:block" />
+              Our Experienced Doctors
+            </h1>
+            <a
+              href="#upload-report"
+              className="inline-flex items-center px-6 py-3 bg-white text-primary rounded-full text-sm font-medium hover:bg-gray-100 transition-all duration-200"
+            >
+              Upload Your Report
+              <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+              </svg>
+            </a>
+          </div>
+          
+          <div className="w-full md:w-1/2 mt-8 md:mt-0">
+            <img 
+              src={appointment_img}
+              alt="Medical consultation illustration"
+              className="w-full max-w-md mx-auto"
+              loading="lazy"
+            />
+          </div>
         </div>
+      </div>
 
-        {/* -------------------------Right Side ----------------------- */}
-        <div className='hidden md:block md:w-1/2 lg:w-[370px] relative'>
-            <img className='w-full absolute bottom-0 right-0 max-w-md' src={appointment_img} alt="" />
-        </div>
-    </div>
+      {/* Upload Section */}
+      <div id="upload-report" className="px-4 sm:px-6 md:px-8 py-6 max-w-4xl mx-auto">
+        <form onSubmit={bookSecondAppointment} className="space-y-6">
+          <div className="bg-white p-6 rounded-lg shadow-sm">
+            <h2 className="text-xl font-semibold text-gray-800 mb-6">Upload Your Report</h2>
 
-    <div id='upload-report' className='py-2'>
+            {/* File Upload */}
+            <div className="space-y-4">
+              <div className="flex items-center">
+                <label className="text-lg text-gray-700">Upload file</label>
+                <button
+                  type="button"
+                  onClick={() => setShowInfo(!showInfo)}
+                  className="ml-2 p-1 hover:bg-gray-100 rounded-full"
+                >
+                  <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </button>
+              </div>
+              
+              {showInfo && (
+                <p className="text-sm text-gray-500 bg-gray-50 p-2 rounded">
+                  Only PDF files are supported
+                </p>
+              )}
 
-    </div>
-        {/* --------------------------Upload Section---------------------------------- */}
-        <form className='m-5 w-full' onSubmit={bookSecondAppointment}>
-        <p className='mb-4 text-2xl font-medium text-gray-600'>Upload Your Report</p>
-
-        <div className='bg-white px-8 py-8 border rounded w-full max-w-4xl max-h-[80vh] overflow-y-scroll'>
-
-            <div className='flex flex-col items-start gap-4 mb-8 text-gray-500'>
-                <div className='flex items-center'>
-                    <p className='text-lg'>Upload file</p> 
-                    <img onClick={()=>setShowInfo(!showInfo)} className='ml-2' src={info_icon} alt="" />
-                    { showInfo && <p className='items-center text-xs text-gray-400 px-2'>Only pdf file supported</p>}
-                </div>
-                
-                <input onChange={(e)=>setReportFile(e.target.files[0])} type="file" required />
+              <input
+                type="file"
+                onChange={handleFileChange}
+                accept=".pdf"
+                required
+                className="block w-full text-sm text-gray-500 
+                  file:mr-4 file:py-2 file:px-4 
+                  file:rounded-full file:border-0 
+                  file:text-sm file:font-semibold
+                  file:bg-primary file:text-white 
+                  hover:file:bg-primary/90"
+              />
             </div>
 
-            <div className='flex flex-col lg:flex-row items-start gap-10 text-gray-600'>
-
-                <div className='w-full lg:flex-1 flex flex-col gap-4 text-gray-500'>
-
-                    <div className='flex-1 flex flex-col gap-1'>
-                        <p className='text-lg py-2'>Select department</p>
-                        <select onChange={(e)=>setValue(e.target.value, e.target.selectedIndex)} value={department} className='border rounded px-3 py-2 w-max' name="" id="">
-                            <option value="">Not Selected</option>
-                            {departments.map((item, index)=>(
-                                <option key={index} value={item.speciality}>{item.speciality}</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div className='flex-1 flex flex-col gap-1'>
-                        <p className='text-lg py-2'>Select Symptoms</p>
-                        <div className='flex flex-wrap gap-4'>
-                            {
-                                filterSymptom[0]
-                                ? filterSymptom.map((item, index)=>(
-                                    <label htmlFor={index} className='flex flex-wrap gap-2 border border-gray-2 rounded-full px-3 py-2 hover:scale-105 transition-all duration-200'>
-                                        <input ref={(element) => { ref.current[index] = element }} onChange={(e)=>addUserSymptoms(e.target.value)} key={index} type="checkbox" className='px-3 py-2' value={item} class="symptoms-checkbox" id={index}/>
-                                        <p>{item}</p>
-                                    </label>
-                                ))
-                                : <p className='font-medium text-sm'>No Symptoms Available</p>
-                            }
-                        </div>
-                    </div>
-                </div>
+            {/* Department Selection */}
+            <div className="mt-8">
+              <label className="text-lg text-gray-700">Select department</label>
+              <select
+                onChange={(e) => setValue(e.target.value, e.target.selectedIndex)}
+                value={department}
+                className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm 
+                  focus:border-primary focus:ring-primary text-base"
+              >
+                <option value="">Not Selected</option>
+                {departments.map((item, index) => (
+                  <option key={index} value={item.speciality}>
+                    {item.speciality}
+                  </option>
+                ))}
+              </select>
             </div>
 
-            <button type='submit' className='bg-primary text-white px-10 py-3 mt-10 rounded-full'>Upload</button>
-        </div>
+            {/* Symptoms Selection */}
+            <div className="mt-8">
+              <label className="text-lg text-gray-700">Select Symptoms</label>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {filterSymptom[0] ? (
+                  filterSymptom.map((item, index) => (
+                    <label
+                      key={index}
+                      className="group flex items-center gap-2 border rounded-full px-4 py-2 
+                        hover:bg-gray-50 cursor-pointer transition-colors duration-200"
+                    >
+                      <input
+                        type="checkbox"
+                        ref={el => checkboxRefs.current[index] = el}
+                        onChange={(e) => addUserSymptoms(e.target.value)}
+                        value={item}
+                        className="rounded-full text-primary focus:ring-primary"
+                      />
+                      <span className="text-sm text-gray-700 group-hover:text-gray-900">
+                        {item}
+                      </span>
+                    </label>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">No Symptoms Available</p>
+                )}
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="mt-8 w-full sm:w-auto px-8 py-3 bg-primary text-white 
+                rounded-full hover:bg-primary/90 focus:outline-none 
+                focus:ring-2 focus:ring-offset-2 focus:ring-primary
+                disabled:opacity-50 disabled:cursor-not-allowed
+                transition-colors duration-200"
+            >
+              {isLoading ? 'Uploading...' : 'Upload'}
+            </button>
+          </div>
         </form>
+      </div>
     </div>
   )
 }
