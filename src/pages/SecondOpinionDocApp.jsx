@@ -77,7 +77,7 @@ const SecondOpinionDocApp = () => {
                 toast.success(data.message)
                 navigate('/my-reports')
               } else {
-                toast.error(data.message)
+                toast.error(data.message, "Only Pdf File Supported");
               }
         } catch (error) {
             console.log(error);
